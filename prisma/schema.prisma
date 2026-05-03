@@ -1,0 +1,159 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum TenantStatus {
+  ACTIVE
+  SUSPENDED
+  DELETED
+}
+
+enum UserRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+enum SubscriptionStatus {
+  ACTIVE
+  PAST_DUE
+  CANCELED
+  TRIALING
+  INCOMPLETE
+}
+
+enum SubscriptionPlan {
+  FREE
+  BASIC
+  PRO
+  ENTERPRISE
+}
+
+model Tenant {
+  id              String             @id @default(uuid())
+  slug            String             @unique
+  name            String
+  domain          String?            @unique
+  status          TenantStatus       @default(ACTIVE)
+  settings        Json               @default("{}")
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  deletedAt       DateTime?
+
+  users           User[]
+  subscriptions   Subscription[]
+  invitations     Invitation[]
+  auditLogs       AuditLog[]
+
+  @@index([slug])
+  @@index([status])
+  @@map("tenants")
+}
+
+model User {
+  id              String             @id @default(uuid())
+  email           String             @unique
+  password        String
+  firstName       String?
+  lastName        String?
+  avatar          String?
+  role            UserRole           @default(MEMBER)
+  emailVerified   Boolean            @default(false)
+  emailVerifiedAt DateTime?
+  lastLoginAt     DateTime?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  deletedAt       DateTime?
+
+  tenantId        String
+  tenant          Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  refreshTokens   RefreshToken[]
+  auditLogs       AuditLog[]
+
+  @@index([email])
+  @@index([tenantId])
+  @@map("users")
+}
+
+model RefreshToken {
+  id          String    @id @default(uuid())
+  token       String    @unique
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt   DateTime
+  revokedAt   DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([userId])
+  @@index([token])
+  @@map("refresh_tokens")
+}
+
+model Subscription {
+  id              String             @id @default(uuid())
+  stripeCustomerId String?           @unique
+  stripeSubscriptionId String?       @unique
+  plan            SubscriptionPlan   @default(FREE)
+  status          SubscriptionStatus @default(ACTIVE)
+  currentPeriodStart DateTime?
+  currentPeriodEnd   DateTime?
+  cancelAtPeriodEnd  Boolean         @default(false)
+  trialEndsAt     DateTime?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  tenantId        String
+  tenant          Tenant             @relation(fields: [tenantId], references: [id])
+
+  @@index([tenantId])
+  @@index([status])
+  @@map("subscriptions")
+}
+
+model Invitation {
+  id              String             @id @default(uuid())
+  email           String
+  role            UserRole           @default(MEMBER)
+  token           String             @unique
+  expiresAt       DateTime
+  acceptedAt      DateTime?
+  createdAt       DateTime           @default(now())
+
+  tenantId        String
+  tenant          Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  invitedById     String
+  invitedBy       User               @relation("InvitedBy", fields: [invitedById], references: [id])
+
+  @@index([tenantId])
+  @@index([token])
+  @@index([email])
+  @@map("invitations")
+}
+
+model AuditLog {
+  id              String             @id @default(uuid())
+  action          String
+  entityType      String
+  entityId        String
+  changes         Json               @default("{}")
+  ipAddress       String?
+  userAgent       String?
+  createdAt       DateTime           @default(now())
+
+  tenantId        String
+  tenant          Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  userId          String?
+  user            User?              @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
