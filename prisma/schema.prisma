@@ -1,0 +1,58 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Rank {
+  Iniciante
+  Intermediario
+  Avancado
+  Profissional
+  Institucional
+}
+
+model User {
+  id                String             @id @default(uuid())
+  email             String             @unique
+  name              String?
+  rank              Rank               @default(Iniciante)
+  reputationScore   Float              @default(0)
+  tokenBalance      Int                @default(1000)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  transactions      SocialTransaction[]
+
+  @@map("users")
+}
+
+model OperationalCore {
+  id              String             @id @default(uuid())
+  name            String             @unique
+  energyCapacity  Int
+  isActive        Boolean            @default(true)
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  transactions    SocialTransaction[]
+
+  @@map("operational_cores")
+}
+
+model SocialTransaction {
+  id                String             @id @default(uuid())
+  userId            String
+  operationalCoreId String
+  energyConsumed    Int
+  reputationDelta   Float            @default(0)
+  tokenDelta        Int              @default(0)
+  type              String
+  description       String?
+  createdAt         DateTime         @default(now())
+  user              User             @relation(fields: [userId], references: [id])
+  operationalCore   OperationalCore  @relation(fields: [operationalCoreId], references: [id])
+
+  @@map("social_transactions")
+}
