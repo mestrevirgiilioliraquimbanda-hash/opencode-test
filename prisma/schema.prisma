@@ -7,31 +7,42 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-enum Rank {
-  Iniciante
-  Intermediario
-  Avancado
-  Profissional
-  Institucional
+enum PlayerRank {
+  INICIANTE
+  AVANCADO
+  BIG_PLAYER
+  INSTITUCIONAL
 }
 
-model User {
+enum CoreType {
+  AUREX_13
+  AUREX_X
+  DIAMOND
+  GOLD
+  008
+}
+
+model Operator {
   id                String             @id @default(uuid())
   email             String             @unique
   name              String?
-  rank              Rank               @default(Iniciante)
-  reputationScore   Float              @default(0)
+  rank              PlayerRank         @default(INICIANTE)
   tokenBalance      Int                @default(1000)
+  reputationScore   Float              @default(0.0)
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
   transactions      SocialTransaction[]
+  clanId            String?
+  clan              Clan?              @relation(fields: [clanId], references: [id])
+  ownedClans        Clan[]
 
-  @@map("users")
+  @@map("operators")
 }
 
 model OperationalCore {
   id              String             @id @default(uuid())
   name            String             @unique
+  type            CoreType
   energyCapacity  Int
   isActive        Boolean            @default(true)
   createdAt       DateTime           @default(now())
@@ -41,18 +52,31 @@ model OperationalCore {
   @@map("operational_cores")
 }
 
+model Clan {
+  id              String             @id @default(uuid())
+  name            String             @unique
+  description     String?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  operators       Operator[]
+  ownerId         String
+  owner           Operator           @relation(fields: [ownerId], references: [id])
+
+  @@map("clans")
+}
+
 model SocialTransaction {
   id                String             @id @default(uuid())
-  userId            String
+  operatorId        String
   operationalCoreId String
   energyConsumed    Int
-  reputationDelta   Float            @default(0)
-  tokenDelta        Int              @default(0)
+  reputationDelta   Float             @default(0)
+  tokenDelta        Int               @default(0)
   type              String
   description       String?
-  createdAt         DateTime         @default(now())
-  user              User             @relation(fields: [userId], references: [id])
-  operationalCore   OperationalCore  @relation(fields: [operationalCoreId], references: [id])
+  createdAt         DateTime          @default(now())
+  operator          Operator           @relation(fields: [operatorId], references: [id])
+  operationalCore   OperationalCore    @relation(fields: [operationalCoreId], references: [id])
 
   @@map("social_transactions")
 }
