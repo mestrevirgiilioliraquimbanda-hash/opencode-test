@@ -14,7 +14,7 @@ async function main() {
   for (const core of cores) {
     await prisma.operationalCore.upsert({
       where: { name: core.name },
-      update: {},
+      update: { coreType: core.coreType },
       create: {
         name: core.name,
         coreType: core.coreType,
@@ -23,7 +23,7 @@ async function main() {
     });
   }
 
-  console.log('Operational cores seeded successfully');
+  console.log('Operational cores seeded successfully with Aurex Arena hierarchy');
 }
 
 main()
