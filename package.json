@@ -1,21 +1,38 @@
 {
-  "name": "aurex-arena",
-  "version": "1.0.0",
-  "private": true,
+  "name": "aurex-institucional-game",
+  "version": "0.0.1",
+  "type": "module",
+  "description": "",
   "scripts": {
     "db:generate": "prisma generate",
     "db:migrate": "prisma migrate dev",
     "db:push": "prisma db push",
-    "db:seed": "ts-node prisma/seed.ts",
-    "db:studio": "prisma studio"
+    "db:seed": "node --loader ts-node/esm prisma/seed.ts",
+    "db:studio": "prisma studio",
+    "build": "nest build",
+    "start": "node --loader ts-node/esm dist/main.js",
+    "start:dev": "node --loader ts-node/esm src/main.ts",
+    "start:debug": "node --inspect --loader ts-node/esm src/main.ts",
+    "start:prod": "node dist/main.js"
   },
   "prisma": {
-    "seed": "ts-node prisma/seed.ts"
+    "seed": "node --loader ts-node/esm prisma/seed.ts"
   },
   "devDependencies": {
+    "@nestjs/cli": "^10.0.0",
+    "@nestjs/common": "^10.0.0",
+    "@nestjs/core": "^10.0.0",
+    "@nestjs/platform-express": "^10.0.0",
     "@prisma/client": "^6.0.0",
+    "autoprefixer": "^10.5.0",
+    "postcss": "^8.5.13",
     "prisma": "^6.0.0",
+    "tailwindcss": "^4.2.4",
     "ts-node": "^10.9.2",
     "typescript": "^5.7.0"
+  },
+  "dependencies": {
+    "class-transformer": "^0.5.1",
+    "class-validator": "^0.15.1"
   }
 }
