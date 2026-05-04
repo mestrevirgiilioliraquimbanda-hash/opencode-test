@@ -23,50 +23,54 @@ enum CoreType {
 }
 
 model Operator {
-  id                String             @id @default(uuid())
-  email             String             @unique
-  name              String?
-  rank              PlayerRank         @default(INICIANTE)
-  tokenBalance      Int                @default(1000)
-  reputationScore   Float              @default(0.0)
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  transactions      SocialTransaction[]
-  clanId            String?
-  clan              Clan?              @relation(fields: [clanId], references: [id])
-  ownedClans        Clan[]
+  id              String              @id @default(uuid())
+  email           String              @unique
+  name            String?
+  rank            PlayerRank          @default(INICIANTE)
+  tokenBalance    Int                 @default(1000)
+  reputationScore Float               @default(0.0)
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  
+  clanId          String?
+  clan            Clan?               @relation("ClanMembers", fields: [clanId], references: [id])
+  
+  ownedClans      Clan[]              @relation("ClanOwner")
+  transactions    SocialTransaction[]
 
   @@map("operators")
 }
 
+model Clan {
+  id              String              @id @default(uuid())
+  name            String              @unique
+  description     String?
+  reputationScore Float               @default(0.0)
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+  
+  members         Operator[]          @relation("ClanMembers")
+  ownerId         String
+  owner           Operator            @relation("ClanOwner", fields: [ownerId], references: [id])
+
+  @@map("clans")
+}
+
 model OperationalCore {
-  id              String             @id @default(uuid())
-  name            String             @unique
-  type            CoreType
+  id              String              @id @default(uuid())
+  name            String              @unique
+  coreType        CoreType
   energyCapacity  Int
-  isActive        Boolean            @default(true)
-  createdAt       DateTime           @default(now())
-  updatedAt       DateTime           @updatedAt
+  isActive        Boolean             @default(true)
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
   transactions    SocialTransaction[]
 
   @@map("operational_cores")
 }
 
-model Clan {
-  id              String             @id @default(uuid())
-  name            String             @unique
-  description     String?
-  createdAt       DateTime           @default(now())
-  updatedAt       DateTime           @updatedAt
-  operators       Operator[]
-  ownerId         String
-  owner           Operator           @relation(fields: [ownerId], references: [id])
-
-  @@map("clans")
-}
-
 model SocialTransaction {
-  id                String             @id @default(uuid())
+  id                String            @id @default(uuid())
   operatorId        String
   operationalCoreId String
   energyConsumed    Int
@@ -75,8 +79,9 @@ model SocialTransaction {
   type              String
   description       String?
   createdAt         DateTime          @default(now())
-  operator          Operator           @relation(fields: [operatorId], references: [id])
-  operationalCore   OperationalCore    @relation(fields: [operationalCoreId], references: [id])
+  
+  operator          Operator          @relation(fields: [operatorId], references: [id])
+  operationalCore   OperationalCore   @relation(fields: [operationalCoreId], references: [id])
 
   @@map("social_transactions")
 }

@@ -4,26 +4,26 @@ const prisma = new PrismaClient();
 
 async function main() {
   const cores = [
-    { name: 'Aurex 13', type: CoreType.AUREX_13, energyCapacity: 10000 },
-    { name: 'Aurex X', type: CoreType.AUREX_X, energyCapacity: 7500 },
-    { name: 'Aurex Diamond', type: CoreType.DIAMOND, energyCapacity: 5000 },
-    { name: 'Aurex Gold', type: CoreType.GOLD, energyCapacity: 3000 },
-    { name: 'Aurex 008', type: CoreType["008"], energyCapacity: 1500 },
+    { name: 'Aurex 13', coreType: CoreType.AUREX_13, energyCapacity: 10000 },
+    { name: 'Aurex X', coreType: CoreType.AUREX_X, energyCapacity: 7500 },
+    { name: 'Aurex Diamond', coreType: CoreType.DIAMOND, energyCapacity: 5000 },
+    { name: 'Aurex Gold', coreType: CoreType.GOLD, energyCapacity: 3000 },
+    { name: 'Aurex 008', coreType: CoreType['008'], energyCapacity: 1500 },
   ];
 
   for (const core of cores) {
     await prisma.operationalCore.upsert({
       where: { name: core.name },
-      update: { type: core.type },
+      update: { coreType: core.coreType },
       create: {
         name: core.name,
-        type: core.type,
+        coreType: core.coreType,
         energyCapacity: core.energyCapacity,
       },
     });
   }
 
-  console.log('Operational cores seeded successfully');
+  console.log('Operational cores seeded successfully with Aurex Arena hierarchy');
 }
 
 main()
