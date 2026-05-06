@@ -1,87 +1,62 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { Trophy, Wallet, TrendingUp } from 'lucide-react';
+import { ChartComponent } from './ChartComponent';
 
 function App() {
-  const [data, setData] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        // Conecta no seu backend NestJS (porta 3005)
-        const response = await axios.get('http://localhost:3005/api/player/ranking');
-        setData(response.data.data);
-      } catch (error) {
-        console.error("Erro ao buscar dados do ranking:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, []);
-
-  if (loading) return (
-    <div className="min-h-screen bg-[#0a0a0a] text-emerald-500 flex items-center justify-center font-mono">
-      INICIALIZANDO HUD_SYSTEM...
-    </div>
-  );
-
   return (
-    <div className="min-h-screen bg-[#0a0a0a] text-gray-100 font-sans p-8">
-      <div className="max-w-4xl mx-auto border border-emerald-500/20 bg-emerald-500/5 p-6 rounded-xl backdrop-blur-md shadow-2xl shadow-emerald-500/10">
+    <div className="flex flex-col h-screen bg-[#0c0d10] text-gray-300 font-sans overflow-hidden">
+      
+      {/* BARRA SUPERIOR */}
+      <header className="flex items-center justify-between px-4 py-2 bg-[#131722] border-b border-gray-800">
+        <div className="flex items-center gap-4">
+          <h1 className="text-xl font-bold tracking-tighter text-white">
+            AUREX <span className="text-green-500">AUREX-ARENA-TESTE</span>
+          </h1>
+        </div>
+        <div className="text-xs font-medium uppercase text-green-500">
+          AUR / USD: 1.2615 (+0.42%)
+        </div>
+      </header>
+
+      {/* ÁREA PRINCIPAL */}
+      <main className="flex flex-1 overflow-hidden">
         
-        {/* Cabeçalho do Player */}
-        <div className="flex justify-between items-center mb-8 border-b border-emerald-500/10 pb-6">
-          <div>
-            <h1 className="text-xs uppercase tracking-[0.4em] text-emerald-500/60 mb-1">Authenticated Player</h1>
-            <h2 className="text-3xl font-black tracking-tighter text-white uppercase italic">
-              {data?.playerName || 'aurex-data-player'}
-            </h2>
+        {/* GRÁFICO (Onde o erro é resolvido) */}
+        <section className="flex-1 flex flex-col border-r border-gray-800">
+          <div className="flex-1 bg-[#0c0d10]">
+             {/* AQUI ESTÁ O USO DO COMPONENTE QUE LIMPA O ERRO */}
+             <ChartComponent />
           </div>
-          <div className="text-right">
-            <span className="px-4 py-1.5 rounded-sm border border-emerald-500 bg-emerald-500/20 text-emerald-400 text-xs font-bold uppercase tracking-widest shadow-[0_0_15px_rgba(16,185,129,0.3)]">
-              {data?.currentRank || 'INICIANTE'}
-            </span>
+          
+          <div className="h-32 bg-[#0c0d10] p-2 flex items-end gap-1 border-t border-gray-900">
+             {[...Array(40)].map((_, i) => (
+               <div key={i} className="flex-1 bg-green-500/20 h-full" style={{ height: `${Math.random() * 80}%` }}></div>
+             ))}
           </div>
-        </div>
+        </section>
 
-        {/* Stats Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Volume de Tokens */}
-          <div className="bg-gradient-to-br from-white/10 to-transparent p-5 rounded-lg border border-white/5 hover:border-emerald-500/40 transition-colors">
-            <div className="flex items-center gap-3 mb-3 text-emerald-500">
-              <Wallet size={20} />
-              <span className="text-[10px] font-bold uppercase tracking-widest">Total Volume</span>
-            </div>
-            <p className="text-3xl font-mono font-bold tracking-tighter">
-              {data?.totalVolume?.toLocaleString() || '19.003'}
-              <span className="text-xs text-emerald-500/50 ml-2">ATK</span>
-            </p>
+        {/* LATERAL ECN COM BOTÕES */}
+        <aside className="w-80 bg-[#131722] flex flex-col p-4">
+          <h2 className="text-xs font-bold uppercase text-gray-400 mb-4">Volume por Preço</h2>
+          
+          <div className="flex-1 overflow-hidden opacity-50 text-[10px]">
+            {[...Array(15)].map((_, i) => (
+              <div key={i} className="flex gap-2 mb-1">
+                <span className="w-10 text-gray-500">1.26{15-i}</span>
+                <div className="bg-red-500/30 h-2" style={{ width: `${Math.random() * 100}%` }}></div>
+              </div>
+            ))}
           </div>
 
-          {/* Ranking Global */}
-          <div className="bg-gradient-to-br from-white/10 to-transparent p-5 rounded-lg border border-white/5">
-            <div className="flex items-center gap-3 mb-3 text-blue-400">
-              <TrendingUp size={20} />
-              <span className="text-[10px] font-bold uppercase tracking-widest">Global Rank</span>
-            </div>
-            <p className="text-3xl font-mono font-bold tracking-tighter">#001</p>
+          {/* PAINEL DE OPERAÇÃO DO JOGADOR INSTITUCIONAL */}
+          <div className="grid grid-cols-2 gap-3 mt-4">
+            <button className="bg-green-600 hover:bg-green-500 text-white py-4 rounded font-bold uppercase text-xs transition-colors">
+              Comprar
+            </button>
+            <button className="bg-red-600 hover:bg-red-500 text-white py-4 rounded font-bold uppercase text-xs transition-colors">
+              Vender
+            </button>
           </div>
-
-          {/* Status do Projeto */}
-          <div className="bg-gradient-to-br from-white/10 to-transparent p-5 rounded-lg border border-white/5">
-            <div className="flex items-center gap-3 mb-3 text-purple-400">
-              <Trophy size={20} />
-              <span className="text-[10px] font-bold uppercase tracking-widest">Level Phase</span>
-            </div>
-            <p className="text-sm font-bold uppercase tracking-tight text-gray-400">
-              Institucional Player <br />
-              <span className="text-xs font-normal text-purple-400/60 leading-none">Em Desenvolvimento</span>
-            </p>
-          </div>
-        </div>
-      </div>
+        </aside>
+      </main>
     </div>
   );
 }
